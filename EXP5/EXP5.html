@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp" ng-strict-di>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello World MVC</title>
+    <style>
+        [ng-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- View -->
+    <main ng-controller="MyController as vm" ng-cloak>
+        <h1 aria-live="polite">{{ vm.message }}</h1>
+    </main>
+
+    <noscript>Please enable JavaScript to view this page.</noscript>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+    <script>
+        (function () {
+            "use strict";
+
+            angular
+                .module("myApp", [])
+                .controller("MyController", [function () {
+                    var vm = this;
+                    vm.message = "Hello World from AngularJS MVC!";
+                }]);
+        })();
+    </script>
+
+</body>
+</html>
