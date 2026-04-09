@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basic AJAX Program</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <section class="card">
+        <h2>AJAX Demo with XMLHttpRequest</h2>
+        <p>Click the button to fetch sample data from a public API using AJAX.</p>
+
+        <div class="actions">
+            <button id="loadBtn" type="button">Load Data</button>
+            <button id="clearBtn" type="button">Clear</button>
+        </div>
+
+        <p id="status">Status: Idle</p>
+        <pre id="result">No data loaded yet.</pre>
+    </section>
+
+    <script>
+        (function () {
+            var loadBtn = document.getElementById("loadBtn");
+            var clearBtn = document.getElementById("clearBtn");
+            var statusEl = document.getElementById("status");
+            var resultEl = document.getElementById("result");
+
+            function setStatus(message, type) {
+                statusEl.textContent = "Status: " + message;
+                statusEl.className = type || "";
+            }
+
+            function setLoadingState(isLoading) {
+                loadBtn.disabled = isLoading;
+                loadBtn.textContent = isLoading ? "Loading..." : "Load Data";
+            }
+
+            function loadData() {
+                var xhr = new XMLHttpRequest();
+
+                setLoadingState(true);
+                setStatus("Loading", "");
+
+                xhr.open("GET", "https://jsonplaceholder.typicode.com/todos/1", true);
+                xhr.responseType = "json";
+                xhr.timeout = 7000;
+
+                xhr.onload = function () {
+                    setLoadingState(false);
+
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        var data = xhr.response;
+
+                        if (!data) {
+                            // Fallback for browsers that do not support xhr.responseType = "json".
+                            data = JSON.parse(xhr.responseText);
+                        }
+
+                        resultEl.textContent = JSON.stringify(data, null, 2);
+                        setStatus("Success", "success");
+                    } else {
+                        resultEl.textContent = "Request failed with status code: " + xhr.status;
+                        setStatus("Error", "error");
+                    }
+                };
+
+                xhr.onerror = function () {
+                    setLoadingState(false);
+                    resultEl.textContent = "Network error. Check your internet connection.";
+                    setStatus("Network Error", "error");
+                };
+
+                xhr.ontimeout = function () {
+                    setLoadingState(false);
+                    resultEl.textContent = "Request timed out. Please try again.";
+                    setStatus("Timeout", "error");
+                };
+
+                xhr.send();
+            }
+
+            function clearOutput() {
+                resultEl.textContent = "No data loaded yet.";
+                setStatus("Idle", "");
+            }
+
+            loadBtn.addEventListener("click", loadData);
+            clearBtn.addEventListener("click", clearOutput);
+        })();
+    </script>
+</body>
+</html>
