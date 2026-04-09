@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AJAX User Post Viewer</title>
+	<link rel="stylesheet" href="EXP8.css">
+</head>
+<body>
+	<main class="app">
+		<h1>AJAX User Post Viewer</h1>
+		<p class="subtitle">Enter a user ID (1 to 10) to fetch posts using AJAX.</p>
+
+		<section class="controls">
+			<input id="userIdInput" type="number" min="1" max="10" value="1" aria-label="User ID">
+			<button id="loadBtn" type="button">Load Posts</button>
+			<button id="clearBtn" type="button">Clear</button>
+		</section>
+
+		<div id="status" class="status" aria-live="polite"></div>
+		<section id="results" class="results"></section>
+	</main>
+
+	<script>
+		const loadBtn = document.getElementById("loadBtn");
+		const clearBtn = document.getElementById("clearBtn");
+		const userIdInput = document.getElementById("userIdInput");
+		const statusBox = document.getElementById("status");
+		const resultsBox = document.getElementById("results");
+
+		function setStatus(message, type) {
+			statusBox.className = "status";
+			if (type) {
+				statusBox.classList.add(type);
+			}
+			statusBox.textContent = message;
+		}
+
+		function clearResults() {
+			resultsBox.innerHTML = "";
+			setStatus("", "");
+		}
+
+		function renderPosts(posts) {
+			resultsBox.innerHTML = "";
+
+			if (!posts.length) {
+				setStatus("No posts found for this user.", "error");
+				return;
+			}
+
+			const fragment = document.createDocumentFragment();
+
+			posts.forEach((post) => {
+				const card = document.createElement("article");
+				card.className = "post";
+
+				const title = document.createElement("h3");
+				title.textContent = post.title;
+
+				const body = document.createElement("p");
+				body.textContent = post.body;
+
+				card.appendChild(title);
+				card.appendChild(body);
+				fragment.appendChild(card);
+			});
+
+			resultsBox.appendChild(fragment);
+			setStatus(`Loaded ${posts.length} posts successfully.`, "success");
+		}
+
+		function loadPostsByUser() {
+			const userId = Number(userIdInput.value);
+
+			if (!Number.isInteger(userId) || userId < 1 || userId > 10) {
+				setStatus("Please enter a valid user ID between 1 and 10.", "error");
+				return;
+			}
+
+			setStatus("Loading posts...", "loading");
+			resultsBox.innerHTML = "";
+
+			const xhr = new XMLHttpRequest();
+			const url = `https://jsonplaceholder.typicode.com/posts?userId=${userId}`;
+
+			xhr.open("GET", url, true);
+			xhr.timeout = 10000;
+
+			xhr.onload = function () {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try {
+						const data = JSON.parse(xhr.responseText);
+						renderPosts(data);
+					} catch (error) {
+						setStatus("Could not parse server response.", "error");
+					}
+				} else {
+					setStatus(`Request failed with status ${xhr.status}.`, "error");
+				}
+			};
+
+			xhr.onerror = function () {
+				setStatus("Network error. Please check your internet connection.", "error");
+			};
+
+			xhr.ontimeout = function () {
+				setStatus("Request timed out. Try again.", "error");
+			};
+
+			xhr.send();
+		}
+
+		loadBtn.addEventListener("click", loadPostsByUser);
+		clearBtn.addEventListener("click", clearResults);
+
+		userIdInput.addEventListener("keydown", function (event) {
+			if (event.key === "Enter") {
+				loadPostsByUser();
+			}
+		});
+	</script>
+</body>
+</html>
